@@ -37,7 +37,10 @@ which we saw how to pull directly off the web in Activity 3.
 ```{r}
 #gflu = read.csv("data/gflu_data.txt",skip=11)
 
-gflu <- read.csv("C:/Users/Matt hamburbur/Desktop/HAB Thesis/EE585.4.2/gflu_data.txt", skip = 11)
+#gflu <- read.csv("C:/Users/Matt hamburbur/Desktop/HAB Thesis/EE585.4.2/gflu_data.txt", skip = 11)
+
+gflu <- read.csv("C:/Users/mfman/OneDrive/Desktop/EE585-Exercise4/EE585.4.2/gflu_data.txt", skip = 11)
+
 
 time = as.Date(gflu$Date)
 y = gflu$Massachusetts
@@ -167,7 +170,7 @@ from the 3rd column. We also transform the samples back from the log
 domain to the linear domain.
 
 ```{r}
-time.rng <- c(max(1, length(time) - 80), length(time))  ## zoom in on the last ~80 observations
+time.rng = c(1,length(time))       ## adjust to zoom in and out
 out <- as.matrix(jags.out)         ## convert from coda to matrix  
 x.cols <- grep("^x",colnames(out)) ## grab all columns that start with the letter x
 ci <- apply(exp(out[,x.cols]),2,quantile,c(0.025,0.5,0.975)) ## model was fit on log scale
@@ -327,14 +330,75 @@ fit the model.
 -   Compare the process and observation error estimates and model CI
     between this fit and the original random walk model. How much has
     the residual variance been reduced by?
+    
+```{r}
+summary(params)
+
+#tau_add <- Process Error 
+#Tau_odd <- Observation Error 
+#betaX <- deviation from random walk default
+
+#Time Series SE: 
+
+betaX_SE <-   0.0022248
+tau_add <- 0.0180532
+tau_obs <-  1.1058834
+
+
+
+diff1 <- betaX_SE - tau_add
+diff2 <- betaX_SE - tau_obs 
+
+
+# Parameter estimates for DLM
+betaIntercept_mean <- 0.341850
+betaTmin_mean <- -0.002324
+betaX_mean <- -0.052112
+tau_add_mean <- 26.190020
+tau_obs_mean <- 231.136844
+
+# Parameter estimates for Random Walk model (Assuming the values are similar)
+tau_add_rw <- 1/var(diff(log(y)))
+tau_obs_rw <- 5/var(log(y))
+
+# Calculate residual variance reduction
+reduction_variance <- tau_obs_rw - tau_obs_mean
+
+
+```
+    
 -   Explain and discuss the parameter estimates (betas) from the dynamic
     linear model (what do they mean both biologically and in terms of
     the predictability of the system) and their correlations
+    
+  betaintercept is the baseline of the Flu Index when all other predictors are zero. Biologically, it is the average flu level when there are not other factors. A higher betaintercept suggests a higher baseline of flu and vice versa. 
+  
+  Tmin is the minimum temperature on the Flu Index.  A positive betaTmin suggests that as Tmin increases, the Flu Index tends to increase. This could be attributed to hotter temperatures creating higher flu transmission rates or a seasonal effect.
+ 
+  X is the latent effect of another predictor variable on the Flu Index. It is not specified explicitely for a biologically interpretation. A higher negative x would mean higher values of X are associated with lower flu activity, and vice versa.
+  
+A a positive correlation between betaTmin and betaX would suggest that both Tmin and X tend to increase or decrease together, affecting the Flu Index in a similar direction. Conversely, a negative correlation would suggest an inverse relationship. Large variations in the correlation plot suggest lack of a relationship. A natural decay occurs biologically such as between betaX and betaTmin & betaX and betaintercept where there is low correlation plot variance, that suggests a relationship. This suggests the model and flu baseline as well as minimum temperature and flu baseline has a strong correlation and may have a cause and effect relationship. 
+
+
+    
+    
 -   Because a state-space model returns X's that are close to the Y's,
     metrics such as R2 and RMSE aren't great metrics of model
     performance. Besides looking at the taus, how else could we judge
     which model is doing better (in a way that avoids/penalizes
     overfitting)?
+    
+    Information Criteria: Use information criteria such as Akaike Information Criterion (AIC) or Bayesian Information Criterion (BIC) to compare the goodness of fit of different models. These criteria penalize overfitting by including a penalty term for the number of parameters in the model.
+
+Out-of-Sample Prediction: Assess the model's performance on unseen data or through cross-validation. Split the data into training and testing sets, fit the model on the training set, and evaluate its performance on the testing set. This approach helps in assessing how well the model generalizes to new data.
+
+Residual Analysis: Examine the residuals (the differences between observed and predicted values) to check for patterns or systematic errors. A good model should have residuals that are randomly distributed around zero.
+
+Prediction Interval Coverage: Evaluate the coverage of prediction intervals. Prediction intervals should cover the observed data points within a certain confidence level. A model with well-calibrated prediction intervals indicates good performance.
+
+Model Complexity: Consider the complexity of the model relative to the amount of data available. A simpler model that performs nearly as well as a more complex model may be preferred to avoid overfitting.
+
+Cross-Validation: Perform k-fold cross-validation to assess the model's performance. This involves splitting the data into k subsets, training the model on k-1 subsets, and evaluating it on the remaining subset, repeating this process k times. This provides a more robust estimate of the model's performance.
 
 ## Question 4 [B]:
 
