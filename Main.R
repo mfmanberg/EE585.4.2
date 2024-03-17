@@ -53,4 +53,8 @@ forecast %>%
   facet_grid(variable~site_id, scale ="free")
 
 ### Step 4: Save and submit forecast and metadata
+<<<<<<< HEAD
 submit_forecast(forecast,team_info,submit=FALSE)
+=======
+submit_forecast(forecast,team_info,submit=FALSE)
+```
